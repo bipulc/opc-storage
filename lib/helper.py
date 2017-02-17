@@ -1,7 +1,6 @@
 #!/usr/bin/python
 '''Python Wrapper for OPC Standard Storage (Object Storage) RESTFul APIs
 # ---  TO DO List --- #
-# -- Use persistent session instead of new connection and authentication to improve performance -- #
 # -- Add exception handling at all appropriate call -- #
 '''
 
@@ -45,18 +44,6 @@ def is_valid_ops_request(operation):
         log(message)
         exit(1)
 
-def list_container_nonpersist(url, cert_file, headers, username, password):
-
-    try:
-        response = requests.head(url, verify=cert_file, headers=headers, auth=(username, password))
-    except Exception as e:
-        log('An error occurred : %s\n' % e)
-        raise
-    if response.status_code == 204:
-        return response.headers
-    else:
-        log('Job request not accepted - Response code %s' % response.status_code)
-
 def getSessionObject(username,password,cert_file):
 
     try:
@@ -77,18 +64,6 @@ def list_container(url, session):
         raise
     if response.status_code == 204:
         return response.headers
-    else:
-        log('Job request not accepted - Response code %s' % response.status_code)
-
-def account_info_nonpersist(url, cert_file, headers, username, password):
-
-    try:
-        response = requests.get(url, verify=cert_file, headers=headers, auth=(username, password))
-    except Exception as e:
-        log('An error occurred : %s\n' % e)
-        raise
-    if response.status_code == 200:
-        return response.text
     else:
         log('Job request not accepted - Response code %s' % response.status_code)
 
@@ -201,6 +176,5 @@ if __name__ == "__main__":
     logsetting(logfile, loglevel)
 
     is_valid_ops_request(('LIST'))
-    persistent_connection()
 
 
