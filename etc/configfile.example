@@ -1,0 +1,25 @@
+# Do not change the Section Name
+# Update the values below to reflect your Cloud environment
+
+[Section 1]
+
+# Identity Domain Name
+identity_domain = gse00000xxx
+
+# URL to get Authentication Token
+# domain_url = https://gse00000xxx.storage.oraclecloud.com/auth/v1.0
+
+# Storage Cloud Service URL
+storage_url = https://em2.storage.oraclecloud.com/v1/Storage-gse00000xxx
+
+# Default logfile name
+logfile = /tmp/gse00000xxx_object_storage.log
+
+# Username
+username = identity domain username
+
+# Certificate file
+cert_file='<path to certificate file>'
+
+# Download Directory
+download_dir = /tmp
