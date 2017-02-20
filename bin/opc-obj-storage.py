@@ -7,13 +7,12 @@
 
 import sys, argparse, getpass, logging, ConfigParser
 sys.path.append('../lib')
-import helper
+import opcstorage
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", type=str, help="configuration file", required=True)
-parser.add_argument("-o", type=str, help="operations {LIST|DELETE|BULK_DELETE|DOWNLOAD", required=True)
-parser.add_argument("-v", type=str, help="verbose listing of container", nargs='?',default='n')
+parser.add_argument("-o", type=str, help="operations {LIST|LIST_EXT|DELETE|BULK_DELETE|DOWNLOAD", required=True)
 parser.add_argument("-n", type=str, help="container or object name")
 args = parser.parse_args()
 
@@ -23,7 +22,6 @@ password = getpass.getpass('Identity Domain Password:')
 operation = args.o
 config_file = args.c
 object_name = args.n
-verbose = args.v
 
 cp = ConfigParser.ConfigParser()
 cp.read(config_file)
@@ -40,26 +38,26 @@ download_dir = parameters['download_dir']
 # Set logging and print name of logfile to check
 loglevel="INFO"
 nloglevel =getattr(logging, loglevel, None)
-helper.logsetting(logfile, nloglevel)
+opcstorage.logsetting(logfile, nloglevel)
 
-helper.log(' ')
-helper.log('{:90}'.format("-" * 90))
-helper.log('{:30} {:30}'.format('logfile', logfile))
+opcstorage.log(' ')
+opcstorage.log('{:90}'.format("-" * 90))
+opcstorage.log('{:30} {:30}'.format('logfile', logfile))
 
-helper.log('{:30} {:30}'.format('username', username))
-helper.log('{:30} {:30}'.format('identity domain', identity_domain))
-helper.log('{:30} {:30}'.format('storage_url', storage_url))
-helper.log('{:30} {:30}'.format('certificate file', cert_file))
-helper.log('{:30} {:30}'.format('download dir',download_dir))
-helper.log('{:90}'.format("-" * 90))
-helper.log(' ')
+opcstorage.log('{:30} {:30}'.format('username', username))
+opcstorage.log('{:30} {:30}'.format('identity domain', identity_domain))
+opcstorage.log('{:30} {:30}'.format('storage_url', storage_url))
+opcstorage.log('{:30} {:30}'.format('certificate file', cert_file))
+opcstorage.log('{:30} {:30}'.format('download dir',download_dir))
+opcstorage.log('{:90}'.format("-" * 90))
+opcstorage.log(' ')
 
 # Validate Operations
 
-helper.is_valid_ops_request(operation)
+opcstorage.is_valid_ops_request(operation,object_name)
 
 # Now I have all the input variables to make REST call to OPC
 
-helper.opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password)
-helper.log(' ')
+opcstorage.opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password)
+opcstorage.log(' ')
 
