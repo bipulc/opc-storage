@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''Python Wrapper for OPC Standard Storage (Object Storage) RESTFul APIs
 # ---  TO DO List --- #
 # -- Add exception handling at all appropriate call -- #
@@ -46,12 +46,20 @@ def convertsize(B):
 
 
 def is_valid_ops_request(operation, object_name):
-    if operation not in ('LIST','LIST_EXT','DELETE','BULK_DELETE','DOWNLOAD'):
-        message = '{:50} {:40}'.format('Invalid Operation Request! Should be one of - ','LIST|LIST_EXT|DELETE|BULK_DELETE|DOWNLOAD')
+    if operation not in ('LIST','LIST_EXT','DELETE','BULK_DELETE','DOWNLOAD','CREATE','UPLOAD'):
+        message = '{:50} {:40}'.format('Invalid Operation Request! Should be one of - ','BULK_DELETE|CREATE|DELETE|DOWNLOAD|LIST|LIST_EXT|UPLOAD')
         log(message)
         exit(1)
     if operation == 'LIST_EXT' and object_name is None:
         message = '{:80}'.format('Invalid Operation Request! Should specify container name for extended listing')
+        log(message)
+        exit(1)
+    if operation == 'BULK_DELETE' and object_name is None:
+        message = '{:80}'.format('Invalid Operation Request! Should specify container name for bulk delete operation')
+        log(message)
+        exit(1)
+    if operation == 'CREATE' and object_name is None:
+        message = '{:80}'.format('Invalid Operation Request! Should specify container name for creating container')
         log(message)
         exit(1)
 
@@ -63,6 +71,16 @@ def getsessionobject(username,password,cert_file):
         s.auth = (username, password)
         s.verify = cert_file
         return s
+    except Exception as e:
+        log('An error occurred : %s\n' % e)
+        raise
+
+
+def validatesession(url, session):
+
+    try:
+        response = session.head(url)
+        return response.status_code
     except Exception as e:
         log('An error occurred : %s\n' % e)
         raise
@@ -164,7 +182,7 @@ def pretty_object_output(oi_dict, object_name):
     last_modified = oi_dict[object_name]['Last-Modified']
     size = convertsize(oi_dict[object_name]['Content-Length'])
 
-    detail = '{:50} {:>30} {:>10}'.format(object_name, last_modified, size)
+    detail = '{:50} {:>30} {:>10}'.format(object_name[:50], last_modified, size)
     log(detail)
 
 
@@ -197,8 +215,8 @@ def listcontainer(url, object_name, session_handler):
         ci_dict[object_name]['X-Container-Bytes-Used'] = container_info['headers'].get('X-Container-Bytes-Used')
         ci_dict[object_name]['X-Container-Object-Count'] = container_info['headers'].get('X-Container-Object-Count')
 
-    print_header()
-    pretty_output(ci_dict, object_name)
+        print_header()
+        pretty_output(ci_dict, object_name)
 
 
 def listallcontainer(storage_url, session_handler):
@@ -218,7 +236,7 @@ def listallcontainer(storage_url, session_handler):
                 ci_dict[object_name]['X-Container-Bytes-Used'] = container_info['headers'].get('X-Container-Bytes-Used')
                 ci_dict[object_name]['X-Container-Object-Count'] = container_info['headers'].get('X-Container-Object-Count')
 
-            pretty_output(ci_dict, object_name)
+                pretty_output(ci_dict, object_name)
 
 
 def listallobjectsincontainer(storage_url, container_name, session_handler):
@@ -236,10 +254,65 @@ def listallobjectsincontainer(storage_url, container_name, session_handler):
             oi_dict[object_name]['Last-Modified'] = object_info['headers'].get('Last-Modified')
             oi_dict[object_name]['Content-Length'] = object_info['headers'].get('Content-Length')
 
-        pretty_object_output(oi_dict, object_name)
+            pretty_object_output(oi_dict, object_name)
 
 
-def opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password):
+def bulkdeletecontainer(storage_url, container_name, session_handler, dir_path):
+    """ Bulk Delete objects from a container. """
+    file_extn = '.delete'
+    file_name = os.path.join(dir_path, container_name + file_extn)
+
+    # print file_name
+
+    # Check if the file exists and delete it
+    if os.path.isfile(file_name):
+        os.remove(file_name)
+
+    # Open file for writing
+    f_handler = open(file_name, 'w')
+
+    # Fetch object names of the objects in the container and write to the file
+
+    url = storage_url + '/' + container_name
+    object_list = convert_to_list(getobjectlist(url, session_handler))
+
+    for item in object_list:
+
+            object_name_with_full_path = container_name + '/' +item
+            f_handler.write("%s\n" % object_name_with_full_path)
+
+    f_handler.close()
+
+    # make REST Call to Oracle Cloud to delete all objects of the container
+
+    try:
+        headers = {'Content-Type':'text/plain'}
+        url = storage_url + '?bulk-delete'
+        payload = open(file_name, 'rb')
+        response = session_handler.delete(url, headers=headers, data=payload)
+        payload.close()
+        message = '{:30} {:30} {:20}'.format('Objects from container ', container_name, ' deleted...')
+        log(message)
+    except Exception as e:
+        log('An error occurred : %s\n' % e)
+        payload.close()
+        raise
+
+
+def createcontainer(storage_url, container_name, session_handler):
+    '''Create an empty container in Oracle Cloud'''
+
+    # Validate container name -- should not contain a slash (/)
+
+    url = storage_url + '/' + container_name
+    response = session_handler.put(url)
+
+    if response.status_code == 201:
+        message = '{:30} {:30} {:20}'.format('Empty container ', container_name, 'created ...')
+        log(message)
+
+
+def opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir):
     '''
     For LIST Operation,
         if a container name is passed to arg.n, then list all objects in that container
@@ -265,6 +338,11 @@ def opcexec(operation, identity_domain, object_name, storage_url, cert_file, use
     }
 
     session_handler = getsessionobject(username,password,cert_file)
+    is_session_valid = validatesession(storage_url, session_handler)
+
+    if is_session_valid == 401:
+        log('Invalid authentication token ...  check credentials')
+        exit(1)
 
     if operation == 'LIST':
         if object_name:
@@ -279,6 +357,14 @@ def opcexec(operation, identity_domain, object_name, storage_url, cert_file, use
 
         listallobjectsincontainer(storage_url, object_name, session_handler)
 
+    elif operation == 'BULK_DELETE':
+
+        bulkdeletecontainer(storage_url, object_name, session_handler, download_dir)
+
+    elif operation == 'CREATE':
+
+        createcontainer(storage_url, object_name, session_handler)
+
 
 if __name__ == "__main__":
     logfile = '/tmp/pythontest.log'
@@ -291,4 +377,6 @@ if __name__ == "__main__":
     xx = convert_to_list('abc\ndef')
     print xx
 
+
+    # bulkdeletecontainer('https://em2.storage.oraclecloud.com/v1/Storage-gse00000379', 'test', 'session_handler', '/tmp')
 
