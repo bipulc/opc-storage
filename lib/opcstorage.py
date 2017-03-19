@@ -4,11 +4,12 @@
 # -- Add exception handling at all appropriate call -- #
 '''
 
-import sys, os, argparse, getpass, requests, time, logging, ConfigParser, json
+import sys, os, argparse, getpass, requests, time, logging, ConfigParser, json, re
 from collections import defaultdict
 
 
 def logsetting(logfile, loglevel):
+    """Configure logging"""
     logging.basicConfig(level=loglevel,
                         format='%(asctime)s %(levelname)-8s %(message)s',
                         datefmt='%a, %d %b %Y %H:%M:%S',
@@ -17,35 +18,38 @@ def logsetting(logfile, loglevel):
 
 
 def log(logmessage):
+    """Print message to standard output and log file"""
     logging.info(logmessage)
     print logmessage
 
 
 def convertsize(B):
-   'Return the given bytes as a human friendly KB, MB, GB, or TB string'
+    """Return the given bytes as a human friendly KB, MB, GB, or TB string"""
 
-   if B is None:
-       B = 0
+    if B is None:
+        B = 0
 
-   B = float(B)
-   KB = float(1024)
-   MB = float(KB ** 2)
-   GB = float(KB ** 3)
-   TB = float(KB ** 4)
+    B = float(B)
+    KB = float(1024)
+    MB = float(KB ** 2)
+    GB = float(KB ** 3)
+    TB = float(KB ** 4)
 
-   if B < KB:
-      return '{0} {1}'.format(B,'Bytes' if 0 == B > 1 else 'Byte')
-   elif KB <= B < MB:
-      return '{0:.2f} KB'.format(B/KB)
-   elif MB <= B < GB:
-      return '{0:.2f} MB'.format(B/MB)
-   elif GB <= B < TB:
-      return '{0:.2f} GB'.format(B/GB)
-   elif TB <= B:
-      return '{0:.2f} TB'.format(B/TB)
+    if B < KB:
+        return '{0} {1}'.format(B,'Bytes' if 0 == B > 1 else 'Byte')
+    elif KB <= B < MB:
+        return '{0:.2f} KB'.format(B/KB)
+    elif MB <= B < GB:
+        return '{0:.2f} MB'.format(B/MB)
+    elif GB <= B < TB:
+        return '{0:.2f} GB'.format(B/GB)
+    elif TB <= B:
+        return '{0:.2f} TB'.format(B/TB)
 
 
 def is_valid_ops_request(operation, object_name):
+    """Validate arguments and their combinations"""
+
     if operation not in ('LIST','LIST_EXT','DELETE','BULK_DELETE','DOWNLOAD','CREATE','UPLOAD'):
         message = '{:50} {:40}'.format('Invalid Operation Request! Should be one of - ','BULK_DELETE|CREATE|DELETE|DOWNLOAD|LIST|LIST_EXT|UPLOAD')
         log(message)
@@ -62,9 +66,14 @@ def is_valid_ops_request(operation, object_name):
         message = '{:80}'.format('Invalid Operation Request! Should specify container name for creating container')
         log(message)
         exit(1)
+    if operation == 'DELETE' and object_name is None:
+        message = '{:80}'.format('Invalid Operation Request! Should specify object name for deleting object')
+        log(message)
+        exit(1)
 
 
 def getsessionobject(username,password,cert_file):
+    """Create a persistent session object to be used by all other functions"""
 
     try:
         s = requests.Session()
@@ -77,6 +86,7 @@ def getsessionobject(username,password,cert_file):
 
 
 def validatesession(url, session):
+    """Check that session is valid"""
 
     try:
         response = session.head(url)
@@ -87,6 +97,7 @@ def validatesession(url, session):
 
 
 def getcontainerinfo(url, session):
+    """Return object count, last modified and size of container"""
 
     retVal = defaultdict(dict)
 
@@ -107,6 +118,7 @@ def getcontainerinfo(url, session):
 
 
 def getobjectlist(url, session):
+    """Return name of objects in a container """
 
     try:
         response = session.get(url)
@@ -120,6 +132,7 @@ def getobjectlist(url, session):
 
 
 def getobjectinfo(url, session):
+    """Return object name, last modified and size"""
 
     retVal = defaultdict(dict)
 
@@ -139,6 +152,7 @@ def getobjectinfo(url, session):
 
 
 def getaccountinfo(url, session):
+    """Return list of all containers in an account (identity domain) """
 
     try:
         response = session.get(url)
@@ -152,6 +166,7 @@ def getaccountinfo(url, session):
 
 
 def print_header():
+    """Print header for container listing output"""
 
     header = '{:30} {:30} {:>20} {:>20}'.format('container name','last modified','number of objects','size of container')
     log(header)
@@ -159,17 +174,22 @@ def print_header():
 
 
 def print_object_header(container_name):
+    """Print header for object listing output"""
 
     header = '{:30} {:>30}'.format('container name : ',container_name)
     log(header)
-    header = '{:50} {:>30} {:>10}'.format('object name','last modified','size of object')
+    header = '{:50} {:30} {:>10}'.format('object name','last modified','size of object')
     log(header)
     log(' ')
 
 
 def pretty_output(ci_dict, container_name):
+    """Print container information (Lst Modified, Size and Number of Objects)"""
 
-    last_modified = time.ctime(float(ci_dict[container_name]['X-Last-Modified-Timestamp']))
+    try:
+        last_modified = time.ctime(float(ci_dict[container_name]['X-Last-Modified-Timestamp']))
+    except Exception as e:
+        last_modified = ''
     size = convertsize(ci_dict[container_name]['X-Container-Bytes-Used'])
     num_object = ci_dict[container_name]['X-Container-Object-Count']
 
@@ -178,6 +198,7 @@ def pretty_output(ci_dict, container_name):
 
 
 def pretty_object_output(oi_dict, object_name):
+    """Print object information (Last Modified and Size)"""
 
     last_modified = oi_dict[object_name]['Last-Modified']
     size = convertsize(oi_dict[object_name]['Content-Length'])
@@ -187,7 +208,7 @@ def pretty_object_output(oi_dict, object_name):
 
 
 def convert_to_list(in_str):
-    ' Convert output stream from REST CALL response to a list of elements breaking at new line '
+    """Convert output stream from API call response to a list of elements breaking at new line"""
 
     out = []
     buff = []
@@ -205,6 +226,7 @@ def convert_to_list(in_str):
 
 
 def listcontainer(url, object_name, session_handler):
+    """Return Last Modified, Size and Number of Objects in a container"""
 
     ci_dict = defaultdict(dict)
     url = url + '/' + object_name
@@ -220,6 +242,7 @@ def listcontainer(url, object_name, session_handler):
 
 
 def listallcontainer(storage_url, session_handler):
+    """Return Last Modified, Size and Number of Objects in all containers in the account"""
 
     ci_dict = defaultdict(dict)
     top_level_info = convert_to_list(getaccountinfo(storage_url, session_handler))
@@ -240,6 +263,7 @@ def listallcontainer(storage_url, session_handler):
 
 
 def listallobjectsincontainer(storage_url, container_name, session_handler):
+    """Return Last Modified, Size of all Objects in a container"""
 
     oi_dict = defaultdict(dict)
     url = storage_url + '/' + container_name
@@ -300,38 +324,59 @@ def bulkdeletecontainer(storage_url, container_name, session_handler, dir_path):
 
 
 def createcontainer(storage_url, container_name, session_handler):
-    '''Create an empty container in Oracle Cloud'''
+    """Create an empty container"""
 
     # Validate container name -- should not contain a slash (/)
 
-    url = storage_url + '/' + container_name
-    response = session_handler.put(url)
+    if re.search('/',container_name):
+        log('Valid Container name should not have /...')
+        log(' ')
+        exit(1)
+    else:
+        url = storage_url + '/' + container_name
+        response = session_handler.put(url)
 
-    if response.status_code == 201:
-        message = '{:30} {:30} {:20}'.format('Empty container ', container_name, 'created ...')
+        if response.status_code == 201:
+            message = '{:30} {:30} {:20}'.format('Empty container ', container_name, 'created ...')
+            log(message)
+
+
+def deleteobject(storage_url, object_name, session_handler):
+    """Delete an object from storage cloud service. Should pass FQN for object to be deleted"""
+
+    # Validate that the object_name is not a container
+
+    object_url = storage_url + '/' + object_name
+
+    try:
+        response_get = session_handler.head(object_url)
+    except Exception as e_get:
+        log('An error occurred : %\n' % e_get)
+        raise
+    if response_get.status_code == 200:
+        try:
+            response_del = session_handler.delete(object_url)
+        except Exception as e_del:
+            log('An error occurred :  %\n' % e_del)
+            raise
+        if response_del.status_code == 204:
+            message = '{:30} {:30} {:20}'.format('Object ', object_name, 'deleted ...')
+            log(message)
+        elif response_del.status_code == 404:
+            message = '{:30} {:30} {:20}'.format('Object ', object_name, 'not found ...')
+            log(message)
+        else:
+            message = '{:30} {:30} {:20}'.format('Object not deleted', 'API call response code - ', response_del.status_code)
+            log(message)
+    else:
+        message = '{:30} {:30} {:20}'.format('Object not found', ' Get request API call response code - ', response_get.status_code)
+        log(message)
+        message = '{:30} {:80}'.format('Object uri - ', object_url)
         log(message)
 
 
 def opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir):
-    '''
-    For LIST Operation,
-        if a container name is passed to arg.n, then list all objects in that container
-        if an object name is passed to arg.n, then list just that object
-        if arg.n is not  supplied, then list all containers in the identity domain
-
-    For DELETE Operation,
-        if a conatiner name is passed to arg.n, then delete the container if it is empty.
-        if an object name is passed to arg.n, then delete the object
-
-    For BULK_DELETE Operation,
-        arg.n should be name of a container. Generate list of objects within that container and Bulk Delete
-
-    For DOWNLOAD Operation,
-        arg.d should be directory
-        If arg.n is an object, then download it.
-        If arg.n is a container, then download all objects within that container.
-        Downloaded filename should be same as name of object
-    '''
+    """Main function to get session object, validate input and call appropriate sub-function"""
 
     headers = {
         'X-ID-TENANT-NAME': identity_domain
@@ -364,6 +409,10 @@ def opcexec(operation, identity_domain, object_name, storage_url, cert_file, use
     elif operation == 'CREATE':
 
         createcontainer(storage_url, object_name, session_handler)
+
+    elif operation == 'DELETE':
+
+        deleteobject(storage_url, object_name, session_handler)
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ import opcstorage
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", type=str, help="configuration file", required=True)
-parser.add_argument("-o", type=str, help="operations {BULK_DELETE|CREATE|DELETE|DOWNLOAD|LIST|LIST_EXT|UPLOAD", required=True)
+parser.add_argument("-o", type=str, help="operations {BULK_DELETE|CREATE|DELETE|DOWNLOAD|LIST|LIST_EXT|UPLOAD}", required=True)
 parser.add_argument("-n", type=str, help="container or object name")
 args = parser.parse_args()
 
@@ -63,7 +63,7 @@ opcstorage.is_valid_ops_request(operation,object_name)
 try:
     opcstorage.opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir)
     opcstorage.log(' ')
-except (KeyboardInterrupt, SystemExit):
+except KeyboardInterrupt:
     opcstorage.log('Control-C : Program Interrupted')
     sys.exit(1)
 
