@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-c", type=str, help="configuration file", required=True)
 parser.add_argument("-o", type=str, help="operations {BULK_DELETE|CREATE|DELETE|DOWNLOAD|LIST|LIST_EXT|UPLOAD}", required=True)
 parser.add_argument("-n", type=str, help="container or object name")
+parser.add_argument("-f", type=str, help="filename to upload to Storage cloud")
 args = parser.parse_args()
 
 # Prompt for password input and store in a variable
@@ -25,6 +26,7 @@ except (KeyboardInterrupt):
 operation = args.o
 config_file = args.c
 object_name = args.n
+file_name = args.f
 
 cp = ConfigParser.ConfigParser()
 cp.read(config_file)
@@ -57,11 +59,11 @@ opcstorage.log(' ')
 
 # Validate Operations
 
-opcstorage.is_valid_ops_request(operation,object_name)
+opcstorage.is_valid_ops_request(operation, object_name, file_name)
 
 # Now I have all the input variables to make REST call to OPC
 try:
-    opcstorage.opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir)
+    opcstorage.opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir, file_name)
     opcstorage.log(' ')
 except KeyboardInterrupt:
     opcstorage.log('Control-C : Program Interrupted')

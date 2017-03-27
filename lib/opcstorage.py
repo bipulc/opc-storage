@@ -47,7 +47,7 @@ def convertsize(B):
         return '{0:.2f} TB'.format(B/TB)
 
 
-def is_valid_ops_request(operation, object_name):
+def is_valid_ops_request(operation, object_name, file_name):
     """Validate arguments and their combinations"""
 
     if operation not in ('LIST','LIST_EXT','DELETE','BULK_DELETE','DOWNLOAD','CREATE','UPLOAD'):
@@ -68,6 +68,10 @@ def is_valid_ops_request(operation, object_name):
         exit(1)
     if operation == 'DELETE' and object_name is None:
         message = '{:80}'.format('Invalid Operation Request! Should specify object name for deleting object')
+        log(message)
+        exit(1)
+    if operation == 'UPLOAD' and file_name is None:
+        message = '{:80}'.format('Invalid Operation Request! Should specify file name for uploading object')
         log(message)
         exit(1)
 
@@ -226,7 +230,7 @@ def convert_to_list(in_str):
 
 
 def listcontainer(url, object_name, session_handler):
-    """Return Last Modified, Size and Number of Objects in a container"""
+    """Return Last Modified, Size and Number of all Objects in a container"""
 
     ci_dict = defaultdict(dict)
     url = url + '/' + object_name
@@ -279,6 +283,19 @@ def listallobjectsincontainer(storage_url, container_name, session_handler):
             oi_dict[object_name]['Content-Length'] = object_info['headers'].get('Content-Length')
 
             pretty_object_output(oi_dict, object_name)
+
+
+def listobject(object_name, url, session_handler):
+    """Return Last Modified and Size of object stored at input uri"""
+
+    oi_dict = defaultdict(dict)
+    object_info = getobjectinfo(url, session_handler)
+
+    if object_info['status_code'] == 200:
+        oi_dict[object_name]['Last-Modified'] = object_info['headers'].get('Last-Modified')
+        oi_dict[object_name]['Content-Length'] = object_info['headers'].get('Content-Length')
+
+        pretty_object_output(oi_dict, object_name)
 
 
 def bulkdeletecontainer(storage_url, container_name, session_handler, dir_path):
@@ -375,7 +392,47 @@ def deleteobject(storage_url, object_name, session_handler):
         log(message)
 
 
-def opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir):
+def uploadobject(storage_url, file_name, container_name, session_handler):
+    """Upload object to Storage Cloud. Pass FQN of the file to be uploaded. Object name will be same as file name"""
+
+    # Set Maximum supported size to 5GB
+    maxsize = 5368709120
+
+    if not os.path.isfile(file_name):
+        message = '{:30} {:40} {:20}'.format('File to be uploaded -->', file_name, 'does not exist')
+        log(message)
+        exit(1)
+    elif os.path.getsize(file_name) > maxsize:
+        message = '{:30} {:40} {:40}'.format('File to be uploaded -->', file_name, 'is larger than maximum support file size 5GB')
+        log(message)
+        exit(1)
+    else:
+        # get the filename (remove file path)
+        file_base_name = os.path.basename(file_name)
+        # check if container_name is not null
+        if container_name is not None:
+            url = storage_url + '/' + container_name + '/' + file_base_name
+        else:
+            url = storage_url + '/' + file_base_name
+        # Open file for reading as payload
+        try:
+            payload = open(file_name, 'rb')
+            response = session_handler.put(url, data=payload)
+        except Exception as e:
+            log('An error occurred : %s\n' % e)
+            payload.close()
+            raise
+
+        if response.status_code == 201:
+            message = '{:10} {:30} {:20}'.format('Object ', file_base_name, ' uploaded to Storage Cloud ...')
+            log(message)
+            listobject(file_base_name, url, session_handler)
+        else:
+            message = '{:30} {:20}'.format('Upload failed : Status code -> ', response.status_code)
+            log(message)
+
+
+def opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir, file_name):
     """Main function to get session object, validate input and call appropriate sub-function"""
 
     headers = {
@@ -413,6 +470,21 @@ def opcexec(operation, identity_domain, object_name, storage_url, cert_file, use
     elif operation == 'DELETE':
 
         deleteobject(storage_url, object_name, session_handler)
+
+    elif operation == 'DOWNLOAD':
+
+        pass
+
+    elif operation == 'UPLOAD':
+
+        container_name = ''
+        if object_name is not None:
+            container_name = object_name
+        uploadobject(storage_url, file_name, container_name, session_handler)
+
+    else:
+
+        log('Invalid Operation request ...')
 
 
 if __name__ == "__main__":
