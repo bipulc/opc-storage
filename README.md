@@ -1,4 +1,6 @@
-## Brief Description
+## Python API / CLI for Oracle Storage Cloud Service
+
+##### About
 
 opc-storage is a set of functions written in python using Requests module to enable interacting with Oracle Storage Cloud ( Object Storage). Currently the following operations are supported:
 
@@ -12,6 +14,7 @@ DOWNLOAD an object to local machine
 ```
 
 This repository contains a python wrapper script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called `opc-obj-storage.py`. The python module `opcstorage.py` can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
+Note that this is __NOT__ Oracle official Python SDK. Check out [Oracle Documentation](http://docs.oracle.com/en/cloud/iaas/storage-cloud/cssto/index.html) for Storage Cloud Service Java SDK, CLI and RESTful API.
 
 #### Directory structure of repository:
 ```
