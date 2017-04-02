@@ -11,13 +11,17 @@ DELETE all objects in an container (BULK DELETE)
 DOWNLOAD an object to local machine
 ```
 
-This repository contains a python wrapper script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called opc-obj-storage.py. The python module (opcstorage.py) can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
+This repository contains a python wrapper script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called `opc-obj-storage.py`. The python module `opcstorage.py` can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
 
 Directory structure of repository:
+```
     bin —> contains wrapper script opc-obj-storage.py.
     etc —> contains configuration file with inline documentation for each item.
     lib —> contains the main module file opcstorage.py.  A selection of functions are listed below. Functions are documented and can be accessed using help(opcstorage).
-    
+```
+opcstorage module documentation:
+
+```
 NAME
     opcstorage
 
@@ -54,6 +58,8 @@ FUNCTIONS
       
     uploadobject(storage_url, file_name, container_name, session_handler)
         Upload object to Storage Cloud. Pass FQN of the file to be uploaded. Object name will be same as file name
+
+```
 
 Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bare Metal Cloud. Python SDK for interacting with Oracle Bare Metal Cloud is available <here>.
 
