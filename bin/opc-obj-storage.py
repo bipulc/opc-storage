@@ -12,7 +12,7 @@ import opcstorage
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", type=str, help="configuration file", required=True)
 parser.add_argument("-o", type=str, help="operations {BULK_DELETE|CREATE|DELETE|DOWNLOAD|LIST|LIST_EXT|UPLOAD}", required=True)
-parser.add_argument("-n", type=str, help="container or object name")
+parser.add_argument("-n", type=str, help="'container name' for BULK_DELETE, CREATE, UPLOAD and LIST operations or 'object name' for DELETE and DOWNLOAD operations")
 parser.add_argument("-f", type=str, help="filename to upload to Storage cloud")
 args = parser.parse_args()
 

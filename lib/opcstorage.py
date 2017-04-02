@@ -70,11 +70,14 @@ def is_valid_ops_request(operation, object_name, file_name):
         message = '{:80}'.format('Invalid Operation Request! Should specify object name for deleting object')
         log(message)
         exit(1)
-    if operation == 'UPLOAD' and file_name is None:
-        message = '{:80}'.format('Invalid Operation Request! Should specify file name for uploading object')
+    if operation == 'UPLOAD' and (file_name is None or object_name is None):
+        message = '{:80}'.format('Invalid Operation Request! Should specify file name and container name for uploading object')
         log(message)
         exit(1)
-
+    if operation == 'DOWNLOAD' and object_name is None:
+        message = '{:80}'.format('Invalid Operation Request! Should specify object name for downloading object')
+        log(message)
+        exit(1)
 
 def getsessionobject(username,password,cert_file):
     """Create a persistent session object to be used by all other functions"""
@@ -85,30 +88,30 @@ def getsessionobject(username,password,cert_file):
         s.verify = cert_file
         return s
     except Exception as e:
-        log('An error occurred : %s\n' % e)
+        log('getsessionobject: An error occurred : %s\n' % e)
         raise
 
 
-def validatesession(url, session):
+def validatesession(url, session_handler):
     """Check that session is valid"""
 
     try:
-        response = session.head(url)
+        response = session_handler.head(url)
         return response.status_code
     except Exception as e:
-        log('An error occurred : %s\n' % e)
+        log('validatesession: An error occurred : %s\n' % e)
         raise
 
 
-def getcontainerinfo(url, session):
+def getcontainerinfo(url, session_handler):
     """Return object count, last modified and size of container"""
 
     retVal = defaultdict(dict)
 
     try:
-        response = session.head(url)
+        response = session_handler.head(url)
     except Exception as e:
-        log('An error occurred : %s\n' % e)
+        log('getcontainerinfo: An error occurred : %s\n' % e)
         raise
     if response.status_code == 204:
         retVal['status_code'] = 204
@@ -116,57 +119,64 @@ def getcontainerinfo(url, session):
         return retVal
 
     else:
-        log('Job request not accepted - Response code %s' % response.status_code)
+        log('getcontainerinfo: Job request not accepted - Response code %s' % response.status_code)
         retVal['status_code'] = response.status_code
         return retVal
 
 
-def getobjectlist(url, session):
+def getobjectlist(url, session_handler):
     """Return name of objects in a container """
 
     try:
-        response = session.get(url)
+        response = session_handler.get(url)
     except Exception as e:
-        log('An error occurred : %s\n' % e)
+        log('getobjectlist: An error occurred : %s\n' % e)
         raise
     if response.status_code == 200:
         return response.text
+    elif response.status_code == 204:
+        log('getobjectlist: Container %s is empty' % url)
+        exit(1)
+    elif response.status_code == 404:
+        log('getobjectlist: Container %s does not exist' % url)
+        exit(1)
     else:
-        log('Job request not accepted - Response code %s' % response.status_code)
+        log('getobjectlist: Job request not accepted - Response code %s' % response.status_code)
+        exit(1)
 
 
-def getobjectinfo(url, session):
+def getobjectinfo(url, session_handler):
     """Return object name, last modified and size"""
 
     retVal = defaultdict(dict)
 
     try:
-        response = session.head(url)
+        response = session_handler.head(url)
     except Exception as e:
-        log('An error occurred : %\n' % e)
+        log('getobjectinfo: An error occurred : %\n' % e)
         raise
     if response.status_code == 200:
         retVal['status_code'] = 200
         retVal['headers'] = response.headers
         return retVal
     else:
-        log('Job request not accepted - Response code %s' % response.status_code)
+        log('getobjectinfo: Job request not accepted - Response code %s' % response.status_code)
         retVal['status_code'] = response.status_code
         return retVal
 
 
-def getaccountinfo(url, session):
+def getaccountinfo(url, session_handler):
     """Return list of all containers in an account (identity domain) """
 
     try:
-        response = session.get(url)
+        response = session_handler.get(url)
     except Exception as e:
-        log('An error occurred : %s\n' % e)
+        log('getaccountinfo: An error occurred : %s\n' % e)
         raise
     if response.status_code == 200:
         return response.text
     else:
-        log('Job request not accepted - Response code %s' % response.status_code)
+        log('getaccountinfo: Job request not accepted - Response code %s' % response.status_code)
 
 
 def print_header():
@@ -335,7 +345,7 @@ def bulkdeletecontainer(storage_url, container_name, session_handler, dir_path):
         message = '{:30} {:30} {:20}'.format('Objects from container ', container_name, ' deleted...')
         log(message)
     except Exception as e:
-        log('An error occurred : %s\n' % e)
+        log('bulkdeletecontainer: An error occurred : %s\n' % e)
         payload.close()
         raise
 
@@ -346,7 +356,7 @@ def createcontainer(storage_url, container_name, session_handler):
     # Validate container name -- should not contain a slash (/)
 
     if re.search('/',container_name):
-        log('Valid Container name should not have /...')
+        log('createcontainer: Valid Container name should not have /...')
         log(' ')
         exit(1)
     else:
@@ -368,13 +378,13 @@ def deleteobject(storage_url, object_name, session_handler):
     try:
         response_get = session_handler.head(object_url)
     except Exception as e_get:
-        log('An error occurred : %\n' % e_get)
+        log('createcontainer: An error occurred : %\n' % e_get)
         raise
     if response_get.status_code == 200:
         try:
             response_del = session_handler.delete(object_url)
         except Exception as e_del:
-            log('An error occurred :  %\n' % e_del)
+            log('createcontainer: An error occurred :  %\n' % e_del)
             raise
         if response_del.status_code == 204:
             message = '{:30} {:30} {:20}'.format('Object ', object_name, 'deleted ...')
@@ -409,27 +419,59 @@ def uploadobject(storage_url, file_name, container_name, session_handler):
     else:
         # get the filename (remove file path)
         file_base_name = os.path.basename(file_name)
-        # check if container_name is not null
-        if container_name is not None:
-            url = storage_url + '/' + container_name + '/' + file_base_name
-        else:
-            url = storage_url + '/' + file_base_name
-        # Open file for reading as payload
+        url = storage_url + '/' + container_name + '/' + file_base_name
         try:
             payload = open(file_name, 'rb')
             response = session_handler.put(url, data=payload)
         except Exception as e:
-            log('An error occurred : %s\n' % e)
+            log('uploadobject: An error occurred : %s\n' % e)
             payload.close()
             raise
 
         if response.status_code == 201:
             message = '{:10} {:30} {:20}'.format('Object ', file_base_name, ' uploaded to Storage Cloud ...')
             log(message)
+            log(' ')
             listobject(file_base_name, url, session_handler)
         else:
             message = '{:30} {:20}'.format('Upload failed : Status code -> ', response.status_code)
             log(message)
+
+
+def downloadobject(storage_url, object_name, session_handler, download_dir):
+    """Download object to download directory."""
+
+    url = storage_url + '/' + object_name
+    object_base_name = os.path.basename(url)
+    file_name = os.path.join(download_dir, object_base_name)
+
+    # preserve if a file of same name exists
+
+    if os.path.isfile(file_name):
+        new_file_name = file_name + '.' + time.strftime("%Y%m%d%H%M%S")
+        os.rename(file_name, new_file_name)
+
+    # Get the Object's content
+    try:
+        response = session_handler.get(url)
+    except Exception as e:
+        log('downloadobject: An error occurred : %s\n' % e)
+        raise
+
+    # Write content to local file if the request is successful
+    if response.status_code == 200:
+        try:
+            ofile = open(file_name,'w')
+            ofile.write(response.content)
+            ofile.close()
+            message = '{:10} {:30} {:20} {:30}'.format('Object ', object_name, ' downloaded to ', file_name)
+            log(message)
+        except Exception as e:
+            log('downloadobject: An error occurred in writing file to local disk : %s\n' %e)
+            raise
+    else:
+        message = '{:30} {:20}'.format('Download failed : Status code -> ', response.status_code)
+        log(message)
 
 
 def opcexec(operation, identity_domain, object_name, storage_url, cert_file, username, password, download_dir, file_name):
@@ -473,13 +515,11 @@ def opcexec(operation, identity_domain, object_name, storage_url, cert_file, use
 
     elif operation == 'DOWNLOAD':
 
-        pass
+        downloadobject(storage_url, object_name, session_handler, download_dir)
 
     elif operation == 'UPLOAD':
 
-        container_name = ''
-        if object_name is not None:
-            container_name = object_name
+        container_name = object_name
         uploadobject(storage_url, file_name, container_name, session_handler)
 
     else:
@@ -499,5 +539,4 @@ if __name__ == "__main__":
     print xx
 
 
-    # bulkdeletecontainer('https://em2.storage.oraclecloud.com/v1/Storage-gse00000379', 'test', 'session_handler', '/tmp')
 
