@@ -115,19 +115,24 @@ Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bar
 - DELETE operation
 
    Does not include - "multipart-manifest=delete” option
+   
    Impact - For static large objects, only manifest file is deleted but not the segment files.
-   Workaround - Pass segment object name in a separate call to opc-storage tool Or use Java based CLI [http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/deleting-object.html]
+   
+   Workaround - Pass segment object name in a separate call to opc-storage tool Or use [Java based CLI](http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/deleting-object.html)
 
 - UPLOAD operation
 
     Uploading multiple objects from an archive is not supported.
+    
     Doesn’t support objects larger than 5GB.
-    Use Java based CLI for static large objects [http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/uploading-files.html]
+    
+    Use [Java based CLI for static large objects](http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/uploading-files.html)
     
 - DOWNLOAD operation
 
      Download of multipart object is not supported
-     Use Java based CLI for multipart objects [http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/downloading-object.html]
+     
+     Use [Java based CLI for multipart objects](http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/downloading-object.html)
 
 
 #### Known Issues:
