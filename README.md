@@ -80,44 +80,54 @@ Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bar
     -f F        filename to upload to Storage cloud
 
 ```
-- LIST Operation,
+- LIST Operation
+
     List name, size and last modified for all containers in the identity domain if no container name is specified via argument -n|N
     List  size and last modified for the container specified via argument -n|N
     
-- LIST_EXT Operation,
+- LIST_EXT Operation
+
     List name, size and last modified for all objects in container specified via argument -n|N. Container Name is mandatory for LIST_EXT operation.
 
-- DELETE Operation,
+- DELETE Operation
+
     Delete object specified via argument -n|N. Object name should have full path e.g. "MyContainer/MyFirstObject.txt"
 
-- BULK_DELETE Operation,
+- BULK_DELETE Operation
+
    Delete all objects in container specified via argument -n|N. Container name is mandatory for BULK_DELETE operation.
 
-- DOWNLOAD Operation,
+- DOWNLOAD Operation
+
     Download object specified via argument -n|N  to download_dir ( as specified in configuration file) in filename same as object name. Object name should have full path e.g. "MyContainer/MyFirstObject.txt” and downloaded file will be MyFirstObject.txt
 
-- CREATE Operation,
+- CREATE Operation
+
     Create an empty container specified via argument -n|N.
 
-- UPLOAD Operation,
+- UPLOAD Operation
+
     Upload a new object or update an existing one specified via argument -n|N. 
     Argument -f|F takes the name of the file to be uploaded from local machine.
 
 #### Limitations / workaround
+
 - DELETE operation
+
    Does not include - "multipart-manifest=delete” option
    Impact - For static large objects, only manifest file is deleted but not the segment files.
-   Workaround - (1) pass segment object name in a separate call to opc-storage tool.
-                            (2) Use Java based CLI for multipart objects
+   Workaround - Pass segment object name in a separate call to opc-storage tool Or use Java based CLI [http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/deleting-object.html]
 
-- UPLOAD operation:
+- UPLOAD operation
+
     Uploading multiple objects from an archive is not supported.
     Doesn’t support objects larger than 5GB.
-    Use Java based CLI for static large objects
+    Use Java based CLI for static large objects [http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/uploading-files.html]
     
 - DOWNLOAD operation
+
      Download of multipart object is not supported
-     Use Java based CLI for multipart objects
+     Use Java based CLI for multipart objects [http://docs.oracle.com/en/cloud/iaas/storage-cloud/csclr/downloading-object.html]
 
 
 #### Known Issues:
