@@ -2,12 +2,12 @@
 
 opc-storage is a set of functions written in python using Requests module to enable interacting with Oracle Storage Cloud ( Object Storage). Currently the following operations are supported:
 
-#### LISTING of containers and objects
-#### CREATE new Containers
-#### UPLOAD new object / UPDATE existing object
-#### DELETE single object
-#### DELETE all objects in an container (BULK DELETE)
-#### DOWNLOAD an object to local machine
+###### LISTING of containers and objects
+###### CREATE new Containers
+###### UPLOAD new object / UPDATE existing object
+###### DELETE single object
+###### DELETE all objects in an container (BULK DELETE)
+###### DOWNLOAD an object to local machine
 
 This repository contains a python wrapper script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called opc-obj-storage.py. The python module (opcstorage.py) can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
 
