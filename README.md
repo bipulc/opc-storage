@@ -110,6 +110,12 @@ Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bar
     Upload a new object or update an existing one specified via argument -n|N. 
     Argument -f|F takes the name of the file to be uploaded from local machine.
 
+#### Installation
+
+
+#### Example
+
+
 #### Limitations / workaround
 
 - DELETE operation
@@ -140,3 +146,4 @@ Following error occurs occasionally on BULK_DELETE call. However, the delete ope
 
 An error occurred : ('Connection aborted.', error(54, 'Connection reset by peer’))
 
+#### License
