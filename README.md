@@ -61,8 +61,9 @@ FUNCTIONS
 
 ```
 
-Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bare Metal Cloud. Python SDK for interacting with Oracle Bare Metal Cloud is available <here>.
+Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bare Metal Cloud. Python SDK for interacting with Oracle Bare Metal Cloud is available at [Oracle BMC Storage Phython SDK](https://github.com/oracle/bmcs-python-sdk).
 
+```
 Usage:
 
   opc-obj-storage.py -h
@@ -77,6 +78,7 @@ Usage:
                 operations or 'object name' for DELETE and DOWNLOAD operations
     -f F        filename to upload to Storage cloud
 
+```
 LIST Operation,
     List name, size and last modified for all containers in the identity domain if no container name is specified via argument -n|N
     List  size and last modified for the container specified via argument -n|N
