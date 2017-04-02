@@ -13,13 +13,13 @@ DOWNLOAD an object to local machine
 
 This repository contains a python wrapper script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called `opc-obj-storage.py`. The python module `opcstorage.py` can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
 
-Directory structure of repository:
+#### Directory structure of repository:
 ```
     bin —> contains wrapper script opc-obj-storage.py.
     etc —> contains configuration file with inline documentation for each item.
     lib —> contains the main module file opcstorage.py.  A selection of functions are listed below. Functions are documented and can be accessed using help(opcstorage).
 ```
-opcstorage module documentation:
+#### opcstorage module documentation:
 
 ```
 NAME
@@ -63,9 +63,10 @@ FUNCTIONS
 
 Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bare Metal Cloud. Python SDK for interacting with Oracle Bare Metal Cloud is available at [Oracle BMC Storage Phython SDK](https://github.com/oracle/bmcs-python-sdk).
 
-```
-Usage:
 
+#### Usage:
+
+```
   opc-obj-storage.py -h
   usage: opc-obj-storage.py [-h] -c C -o O [-n N] [-f F]
 
@@ -79,47 +80,47 @@ Usage:
     -f F        filename to upload to Storage cloud
 
 ```
-LIST Operation,
+- LIST Operation,
     List name, size and last modified for all containers in the identity domain if no container name is specified via argument -n|N
     List  size and last modified for the container specified via argument -n|N
     
-LIST_EXT Operation,
+- LIST_EXT Operation,
     List name, size and last modified for all objects in container specified via argument -n|N. Container Name is mandatory for LIST_EXT operation.
 
-DELETE Operation,
+- DELETE Operation,
     Delete object specified via argument -n|N. Object name should have full path e.g. "MyContainer/MyFirstObject.txt"
 
-BULK_DELETE Operation,
+- BULK_DELETE Operation,
    Delete all objects in container specified via argument -n|N. Container name is mandatory for BULK_DELETE operation.
 
-DOWNLOAD Operation,
+- DOWNLOAD Operation,
     Download object specified via argument -n|N  to download_dir ( as specified in configuration file) in filename same as object name. Object name should have full path e.g. "MyContainer/MyFirstObject.txt” and downloaded file will be MyFirstObject.txt
 
-CREATE Operation,
+- CREATE Operation,
     Create an empty container specified via argument -n|N.
 
-UPLOAD Operation,
+- UPLOAD Operation,
     Upload a new object or update an existing one specified via argument -n|N. 
     Argument -f|F takes the name of the file to be uploaded from local machine.
 
-Limitations / workaround
-DELETE operation
+#### Limitations / workaround
+- DELETE operation
    Does not include - "multipart-manifest=delete” option
    Impact - For static large objects, only manifest file is deleted but not the segment files.
    Workaround - (1) pass segment object name in a separate call to opc-storage tool.
                             (2) Use Java based CLI for multipart objects
 
-UPLOAD operation:
+- UPLOAD operation:
     Uploading multiple objects from an archive is not supported.
     Doesn’t support objects larger than 5GB.
     Use Java based CLI for static large objects
     
-DOWNLOAD operation
+- DOWNLOAD operation
      Download of multipart object is not supported
      Use Java based CLI for multipart objects
 
 
-Known Issues:
+#### Known Issues:
 Following error occurs occasionally on BULK_DELETE call. However, the delete operation succeeds.
 
 An error occurred : ('Connection aborted.', error(54, 'Connection reset by peer’))
