@@ -115,6 +115,11 @@ Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bar
 
 #### Installation
 
+1. Download source code from [release page] (https://github.com/bipulc/opc-storage).
+2. Untar (or unzip) in any directory on your computer.
+3. Install certificate file as per instruction from [cURL Documentation site] (https://curl.haxx.se/docs/caextract.html). Its as easy as download the cacert.pem file and store in a directory ( e.g. I have stored the cacert.pem file in /Users/bipul/keys directory)
+4. Create configfile in etc directory. An example configfile is provided. Update the values as appropriate. 
+5. Change directory to bin, and run ./opc-obj-storage.py -h to verify installation.
 
 #### Example
 
