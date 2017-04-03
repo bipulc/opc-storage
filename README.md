@@ -178,5 +178,3 @@ Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bar
 Following error occurs occasionally on BULK_DELETE call. However, the delete operation succeeds.
 
 An error occurred : ('Connection aborted.', error(54, 'Connection reset by peer’))
-
-#### License
