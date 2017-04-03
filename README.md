@@ -122,7 +122,32 @@ Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bar
 5. Change directory to bin, and run ./opc-obj-storage.py -h to verify installation.
 
 #### Example
+```
+1. LIST all containers
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o LIST
 
+2. LIST container BIPUL
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o LIST -n BIPUL
+
+3. LIST all objects in container BIPUL
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o LIST_EXT -n BIPUL
+
+4. CREATE a Conatiner
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o CREATE -n NEW_CONTAINER
+
+5. Upload an object to a container
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o UPLOAD -n NEW_CONTAINER -f /Users/bipul/Downloads/cnt2637221-6.pptx
+
+6. Download an object to local machine
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o DOWNLOAD -n NEW_CONTAINER/cnt2637221-6.pptx
+
+7. Delete an Object from a container
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o DELETE -n NEW_CONTAINER/cnt2637221-6.pptx
+
+8. Bulk Delete all objects from a container
+/Users/bipul/python/tools/opc-storage/bin/opc-obj-storage.py -c /Users/bipul/python/tools/opc-storage/etc/configfile -o BULK_DELETE -n BULK_DELETE_TEST
+
+```
 
 #### Limitations / workaround
 
