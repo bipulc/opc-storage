@@ -13,8 +13,9 @@ DELETE all objects in an container (BULK DELETE)
 DOWNLOAD an object to local machine
 ```
 
-This repository contains a python wrapper script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called `opc-obj-storage.py`. The python module `opcstorage.py` can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
+This repository contains a python CLI script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called `opc-obj-storage.py`. The python module `opcstorage.py` can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
 Note that this is __NOT__ Oracle official Python SDK. Check out [Oracle Documentation](http://docs.oracle.com/en/cloud/iaas/storage-cloud/cssto/index.html) for Storage Cloud Service Java SDK, CLI and RESTful API.
+It is developed using Python 2.7.13 on Mac OS X El Capitan (10.11.6), and should work on any OS using Python 2.7.
 
 #### Directory structure of repository:
 ```
@@ -115,8 +116,8 @@ Note that these are supported on Oracle Public Cloud (OPC) and not on Oracle Bar
 
 #### Installation
 
-1. Download source code from [release page](https://github.com/bipulc/opc-storage).
-2. Untar (or unzip) in any directory on your computer.
+1. Download source code from "Clone or Download" link.
+2. Unzip in any directory on your computer.
 3. Install certificate file as per instruction from [cURL Documentation site](https://curl.haxx.se/docs/caextract.html). Its as easy as download the cacert.pem file and store in a directory ( e.g. I have stored the cacert.pem file in /Users/bipul/keys directory)
 4. Create configfile in etc directory. An example configfile is provided. Update the values as appropriate. 
 5. Change directory to bin, and run ./opc-obj-storage.py -h to verify installation.
