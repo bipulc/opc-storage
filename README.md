@@ -16,7 +16,7 @@ DOWNLOAD an object to local machine
 This repository contains a python CLI script, python module and a configuration file. The configuration file is used by wrapper script to build command line utility called `opc-obj-storage.py`. The python module `opcstorage.py` can be imported and its functions can be used should you choose to build your own wrapper or need to access OPC Object Storage from your python code. 
 Note that this is __NOT__ Oracle official Python SDK. Check out [Oracle Documentation](http://docs.oracle.com/en/cloud/iaas/storage-cloud/cssto/index.html) for Storage Cloud Service Java SDK, CLI and RESTful API.
 
-**It is developed using Python 2.7.13 on Mac OS X El Capitan (10.11.6), and should work on any OS using Python 2.7.**
+**It is developed using Python 2.7 on Mac OS X El Capitan (10.11.6), tested on Mac OS X El Capitan and Oracle Linux 7.2 and should work on any other OS using Python 2.7 with the dependent packages installed**
 
 #### Package Dependencies ####
 This tool requires the following Python packages.
