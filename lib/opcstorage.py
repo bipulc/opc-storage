@@ -533,10 +533,6 @@ if __name__ == "__main__":
 
     logsetting(logfile, loglevel)
 
-    is_valid_ops_request('LIST_EXT','')
-
-    xx = convert_to_list('abc\ndef')
-    print xx
 
 
 
