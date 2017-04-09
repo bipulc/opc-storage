@@ -18,6 +18,13 @@ Note that this is __NOT__ Oracle official Python SDK. Check out [Oracle Document
 
 **It is developed using Python 2.7.13 on Mac OS X El Capitan (10.11.6), and should work on any OS using Python 2.7.**
 
+#### Package Dependencies ####
+This tool requires the following Python packages.
+
+```
+sys, os, argparse, getpass, requests, time, logging, ConfigParser, json, re, collections
+```
+
 #### Directory structure of repository:
 ```
     bin —> contains wrapper script opc-obj-storage.py.
