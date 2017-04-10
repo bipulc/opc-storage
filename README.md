@@ -9,7 +9,7 @@ LISTING of containers and objects
 CREATE new Containers
 UPLOAD new object / UPDATE existing object
 DELETE single object
-DELETE all objects in an container (BULK DELETE)
+DELETE all objects in a container (BULK DELETE)
 DOWNLOAD an object to local machine
 ```
 
